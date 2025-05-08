@@ -2,18 +2,22 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Pokédex dos 151 Pokémons</title>
+  <title>Pokédex Clássica</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f2f2f2;
+      background: #d32f2f;
+      color: white;
       margin: 0;
       padding: 20px;
     }
 
     h1 {
-      color: #EF5350;
       text-align: center;
+      font-size: 2em;
+      margin-bottom: 20px;
+      color: #fff;
+      text-shadow: 2px 2px #000;
     }
 
     #searchInput {
@@ -22,24 +26,27 @@
       padding: 10px;
       width: 80%;
       max-width: 400px;
-      border: 2px solid #ccc;
+      border: 2px solid #000;
       border-radius: 10px;
       font-size: 16px;
+      background-color: #fff;
+      color: #000;
     }
 
     .pokedex-container {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
     }
 
     .pokemon-card {
-      background: white;
-      border-radius: 16px;
+      background: #212121;
+      border-radius: 12px;
       padding: 15px;
       text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       transition: transform 0.2s;
+      border: 3px solid #f44336;
     }
 
     .pokemon-card:hover {
@@ -47,31 +54,50 @@
     }
 
     .pokemon-card img {
-      width: 120px;
-      height: 120px;
+      width: 96px;
+      height: 96px;
     }
 
     .pokemon-card h3 {
       margin: 10px 0 5px;
-      color: #333;
+      color: #fff;
     }
 
     .pokemon-card p {
       margin: 5px 0;
       font-size: 14px;
-      color: #555;
     }
 
-    @media (max-width: 500px) {
-      .pokemon-card img {
-        width: 96px;
-        height: 96px;
-      }
+    .type-label {
+      display: inline-block;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .strong, .weak {
+      margin-top: 6px;
+    }
+
+    .strong span, .weak span {
+      display: inline-block;
+      background: #2e7d32;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin: 2px;
+      font-size: 11px;
+    }
+
+    .weak span {
+      background: #c62828;
     }
   </style>
 </head>
 <body>
-  <h1>Pokédex dos 151 Pokémons</h1>
+  <h1>Pokédex - 1ª Geração</h1>
   <input type="text" id="searchInput" placeholder="Digite nome ou número do Pokémon...">
   <div id="pokedex" class="pokedex-container"></div>
 
@@ -79,6 +105,48 @@
     const pokedex = document.getElementById("pokedex");
     const searchInput = document.getElementById("searchInput");
     const allPokemon = [];
+
+    const typeColors = {
+      normal: "#A8A77A",
+      fire: "#EE8130",
+      water: "#6390F0",
+      electric: "#F7D02C",
+      grass: "#7AC74C",
+      ice: "#96D9D6",
+      fighting: "#C22E28",
+      poison: "#A33EA1",
+      ground: "#E2BF65",
+      flying: "#A98FF3",
+      psychic: "#F95587",
+      bug: "#A6B91A",
+      rock: "#B6A136",
+      ghost: "#735797",
+      dragon: "#6F35FC",
+      dark: "#705746",
+      steel: "#B7B7CE",
+      fairy: "#D685AD"
+    };
+
+    const typeAdvantages = {
+      normal: { strong: [], weak: ["fighting"] },
+      fire: { strong: ["grass", "ice", "bug", "steel"], weak: ["water", "rock", "ground"] },
+      water: { strong: ["fire", "rock", "ground"], weak: ["electric", "grass"] },
+      electric: { strong: ["water", "flying"], weak: ["ground"] },
+      grass: { strong: ["water", "rock", "ground"], weak: ["fire", "ice", "poison", "flying", "bug"] },
+      ice: { strong: ["grass", "ground", "flying", "dragon"], weak: ["fire", "fighting", "rock", "steel"] },
+      fighting: { strong: ["normal", "rock", "ice", "dark", "steel"], weak: ["flying", "psychic", "fairy"] },
+      poison: { strong: ["grass", "fairy"], weak: ["ground", "psychic"] },
+      ground: { strong: ["fire", "electric", "poison", "rock", "steel"], weak: ["water", "ice", "grass"] },
+      flying: { strong: ["grass", "fighting", "bug"], weak: ["electric", "ice", "rock"] },
+      psychic: { strong: ["fighting", "poison"], weak: ["bug", "ghost", "dark"] },
+      bug: { strong: ["grass", "psychic", "dark"], weak: ["fire", "flying", "rock"] },
+      rock: { strong: ["fire", "ice", "flying", "bug"], weak: ["water", "grass", "fighting", "ground", "steel"] },
+      ghost: { strong: ["psychic", "ghost"], weak: ["ghost", "dark"] },
+      dragon: { strong: ["dragon"], weak: ["ice", "dragon", "fairy"] },
+      dark: { strong: ["psychic", "ghost"], weak: ["fighting", "bug", "fairy"] },
+      steel: { strong: ["ice", "rock", "fairy"], weak: ["fire", "fighting", "ground"] },
+      fairy: { strong: ["fighting", "dragon", "dark"], weak: ["poison", "steel"] },
+    };
 
     const fetchPokemon = async () => {
       for (let i = 1; i <= 151; i++) {
@@ -101,18 +169,29 @@
       const name = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
       const id = pokemon.id.toString().padStart(3, '0');
       const image = pokemon.sprites.front_default;
-      const types = pokemon.types.map(t => t.type.name).join(', ');
+      const types = pokemon.types.map(t => t.type.name);
       const height = pokemon.height / 10;
       const weight = pokemon.weight / 10;
       const abilities = pokemon.abilities.map(a => a.ability.name).join(', ');
 
+      const typeHTML = types.map(type => {
+        return `<span class="type-label" style="background:${typeColors[type] || '#666'}">${type}</span>`;
+      }).join(" ");
+
+      const strong = [...new Set(types.flatMap(type => typeAdvantages[type]?.strong || []))];
+      const weak = [...new Set(types.flatMap(type => typeAdvantages[type]?.weak || []))];
+
+      const strongHTML = strong.length ? strong.map(t => `<span>${t}</span>`).join("") : "Nenhuma";
+      const weakHTML = weak.length ? weak.map(t => `<span>${t}</span>`).join("") : "Nenhuma";
+
       card.innerHTML = `
         <img src="${image}" alt="${name}" />
         <h3>#${id} - ${name}</h3>
-        <p><strong>Tipo:</strong> ${types}</p>
-        <p><strong>Altura:</strong> ${height} m</p>
-        <p><strong>Peso:</strong> ${weight} kg</p>
+        <p>${typeHTML}</p>
+        <p><strong>Altura:</strong> ${height} m | <strong>Peso:</strong> ${weight} kg</p>
         <p><strong>Habilidades:</strong> ${abilities}</p>
+        <div class="strong"><strong>✔️ Forte contra:</strong> ${strongHTML}</div>
+        <div class="weak"><strong>❌ Fraco contra:</strong> ${weakHTML}</div>
       `;
 
       pokedex.appendChild(card);
