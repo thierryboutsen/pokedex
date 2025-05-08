@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dragon Ball - Personagens</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d47a1;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      margin-bottom: 10px;
+      color: #fff;
+      text-shadow: 2px 2px #000;
+    }
+
+    .nav-links {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .nav-links a {
+      background: #212121;
+      color: #fff;
+      padding: 10px 20px;
+      margin: 0 10px;
+      text-decoration: none;
+      border: 2px solid #2196f3;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+
+    .nav-links a:hover {
+      background: #2196f3;
+    }
+
+    #searchInput {
+      display: block;
+      margin: 10px auto 30px;
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      border: 2px solid #000;
+      border-radius: 10px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #000;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .character-card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+      border: 3px solid #2196f3;
+    }
+
+    .character-card:hover {
+      transform: scale(1.05);
+    }
+
+    .character-card img {
+      width: 120px;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .character-card h3 {
+      margin-top: 10px;
+      color: #fff;
+    }
+
+    .character-card p {
+      margin: 4px 0;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dragon Ball - Personagens</h1>
+
+  <div class="nav-links">
+    <a href="index.html">Pokémon</a>
+    <a href="dragonball.html">Dragon Ball</a>
+  </div>
+
+  <input type="text" id="searchInput" placeholder="Digite o nome do personagem...">
+  <div id="characters" class="card-container"></div>
+
+  <script>
+    const charactersDiv = document.getElementById("characters");
+    const searchInput = document.getElementById("searchInput");
+    const characterList = [];
+
+    const loadCharacters = async () => {
+      const res = await fetch("https://dragonball-api.com/api/characters?limit=50");
+      const data = await res.json();
+      characterList.push(...data.items);
+      renderCharacters(data.items);
+    };
+
+    const renderCharacters = (list) => {
+      charactersDiv.innerHTML = "";
+      list.forEach(char => {
+        const card = document.createElement("div");
+        card.classList.add("character-card");
+
+        card.innerHTML = `
+          <img src="${char.image}" alt="${char.name}">
+          <h3>${char.name}</h3>
+          <p><strong>Raça:</strong> ${char.race || "Desconhecida"}</p>
+          <p><strong>Ki:</strong> ${char.ki || "?"}</p>
+          <p><strong>Planeta de origem:</strong> ${char.originPlanet || "Desconhecido"}</p>
+        `;
+
+        charactersDiv.appendChild(card);
+      });
+    };
+
+    searchInput.addEventListener("input", () => {
+      const value = searchInput.value.toLowerCase();
+      const filtered = characterList.filter(char =>
+        char.name.toLowerCase().includes(value)
+      );
+      renderCharacters(filtered);
+    });
+
+    loadCharacters();
+  </script>
+</body>
+</html>
